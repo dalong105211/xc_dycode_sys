@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Log</title>
+    {% include 'admin/common/header.html' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin/admin/css/other/console2.css') }}"/>
+</head>
+<body class="pear-container">
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-tab layui-tab-card">
+            <ul class="layui-tab-title">
+                <li class="layui-this">Broswer login record</li>
+                <li>Broswer operate record</li>
+                <li>Client login record</li>
+                <li>Client operate record</li>
+            </ul>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <table style="margin-top: 10px;" id="log-login-table" lay-filter="log-login-table"></table>
+                </div>
+                <div class="layui-tab-item">
+                    <table style="margin-top: 10px;" id="log-operate-table" lay-filter="log-operate-table"></table>
+                </div>
+                <div class="layui-tab-item">
+                  <div class="layui-card">
+                    <div class="layui-card-body">
+                        <form class="layui-form" action="">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Username</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="username" placeholder="" class="layui-input">
+                                </div>
+                                <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="login-query">
+                                    <i class="layui-icon layui-icon-search"></i>
+                                    Query
+                                </button>
+                                <button type="reset" class="pear-btn pear-btn-md">
+                                    <i class="layui-icon layui-icon-refresh"></i>
+                                    Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                  <table style="margin-top: 10px;" id="log-client-record-table" lay-filter="log-client-record-table"></table>
+              </div>
+              <div class="layui-tab-item">
+                <div class="layui-card">
+                  <div class="layui-card-body">
+                      <form class="layui-form" action="">
+                          <div class="layui-form-item">
+                              <label class="layui-form-label">Username</label>
+                              <div class="layui-input-inline">
+                                  <input type="text" name="username" placeholder="" class="layui-input">
+                              </div>
+                              <label class="layui-form-label">Command</label>
+                              <div class="layui-input-inline">
+                                  <input type="text" name="cmd" placeholder="" class="layui-input">
+                              </div>
+                              <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="operate-query">
+                                  <i class="layui-icon layui-icon-search"></i>
+                                  Query
+                              </button>
+                              <button type="reset" class="pear-btn pear-btn-md">
+                                  <i class="layui-icon layui-icon-refresh"></i>
+                                  Reset
+                              </button>
+                          </div>
+                      </form>
+                  </div>
+              </div>
+                <table style="margin-top: 10px;" id="log-tool-record-table" lay-filter="log-tool-record-table"></table>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+
+<script type="text/html" id="log-createTime">
+    {{ '  {{layui.util.toDateString(d.create_time,  "yyyy-MM-dd HH:mm:ss")}' |safe }}}
+</script>
+<script type="text/html" id="log-dt">
+  {{ '  {{layui.util.toDateString(d.dt,  "yyyy-MM-dd HH:mm:ss")}' |safe }}}
+</script>
+<script type="text/html" id="log-status">
+    {{ '{{#if (d.success == true) { }}
+    <span style="color: green">success</span>
+    {{# }else if(d.success == false){ }}
+    <span style="color: red">fail</span>
+    {{# } }}'|safe }}
+</script>
+{% include 'admin/common/footer.html' %}
+<script>
+  layui.use(['table', 'form', 'jquery', 'element', 'util'], function () {
+    let table = layui.table
+    let form = layui.form
+
+    let MODULE_PATH = '/admin/log/'
+
+    let cols = [
+      [
+        { title: 'ID', field: 'id', align: 'center' },
+        { title: 'Method', field: 'method', align: 'center' },
+        { title: 'api', field: 'url', align: 'center' },
+        { title: 'Browser', field: 'user_agent', align: 'center' },
+        { title: 'IP', field: 'ip', align: 'center' },
+        { title: 'Login Time', field: 'create_time', templet: '#log-createTime', align: 'center' },
+        { title: 'UID', field: 'uid', align: 'center' },
+        { title: 'Description', field: 'desc', align: 'center' },
+        { title: 'Status', templet: '#log-status', align: 'center' }
+      ]
+    ]
+
+    let client_login = [
+      [
+        { title: 'ID', field: 'id', align: 'center' },
+        { title: 'Username', field: 'user', align: 'center' },
+        { title: 'IP', field: 'ip', align: 'center' },
+        { title: 'PC', field: 'pc', align: 'center' },
+        { title: 'Login Time', field: 'dt', templet: '#log-dt', align: 'center' }
+      ]
+    ]
+
+    let client_tool = [
+      [
+      { title: 'ID', field: 'id', align: 'center' },
+        { title: 'Username', field: 'user', align: 'center' },
+        { title: 'CMD', field: 'function', align: 'center' },
+        { title: 'Result', field: 'res', align: 'center' },
+        { title: 'IP', field: 'ip', align: 'center' },
+        { title: 'PC', field: 'pc', align: 'center' },
+        { title: 'Login Time', field: 'dt', templet: '#log-dt', align: 'center' }
+      ]
+    ]
+
+    table.render({
+      elem: '#log-operate-table',
+      url: MODULE_PATH + 'operateLog',
+      page: true,
+      cols: cols,
+      skin: 'line',
+      toolbar: false
+    })
+
+    table.render({
+      elem: '#log-login-table',
+      url: MODULE_PATH + 'loginLog',
+      page: true,
+      cols: cols,
+      skin: 'line',
+      toolbar: false
+    })
+
+    table.render({
+      elem: '#log-client-record-table',
+      url: MODULE_PATH + 'clientLogin',
+      page: true,
+      cols: client_login,
+      skin: 'line',
+      toolbar: false
+    })
+
+    table.render({
+      elem: '#log-tool-record-table',
+      url: MODULE_PATH + 'clientTool',
+      page: true,
+      cols: client_tool,
+      skin: 'line',
+      toolbar: false
+    })
+
+    form.on('submit(dict-type-query)', function (data) {
+      table.reload('dict-type-table', { where: data.field })
+      return false
+    })
+
+    form.on('submit(operate-query)', function (data) {
+      table.reload('log-tool-record-table', { where: data.field })
+      return false
+    })
+
+    form.on('submit(login-query)', function (data) {
+      table.reload('log-client-record-table', { where: data.field })
+      return false
+    })
+
+    table.on('tool(log-operate-table)', function (obj) {
+      if (obj.event === 'details') {
+        window.info(obj)
+      }
+    })
+
+    table.on('tool(log-login-table)', function (obj) {
+      if (obj.event === 'details') {
+        window.info(obj)
+      }
+    })
+
+    table.on('tool(log-client-record-table)', function (obj) {
+      if (obj.event === 'details') {
+        window.info(obj)
+      }
+    })
+
+    table.on('tool(log-tool-record-table)', function (obj) {
+      if (obj.event === 'details') {
+        window.info(obj)
+      }
+    })
+
+    window.info = function (obj) {
+      layer.open({
+        type: 2,
+        title: 'Details',
+        shade: 0,
+        // area: ['400px', '400px'],
+        area: ['40%', '80%'],
+        content: MODULE_PATH + 'info',
+        success: function (layero) {
+          let iframeWin = window[layero.find('iframe')[0]['name']]
+          iframeWin.show(obj.data)
+        }
+      })
+    }
+  })
+</script>
+</html>

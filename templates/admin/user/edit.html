@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>用户编辑</title>
+    {% include 'admin/common/header.html' %}
+</head>
+<body>
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+                <div class="layui-form-item layui-hide">
+                    <label class="layui-form-label">ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" value="{{ user.id }}" name="userId" lay-verify="title"
+                               autocomplete="off" placeholder="Please input" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Account</label>
+                    <div class="layui-input-block">
+                        <input type="text" value="{{ user.username }}" name="username" lay-verify="title"
+                               autocomplete="off" placeholder="Please input" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Username</label>
+                    <div class="layui-input-block">
+                        <input type="text" value="{{ user.realname }}" name="realName" lay-verify="title"
+                               autocomplete="off" placeholder="Please input"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Dept</label>
+                    <div class="layui-input-block">
+                        <ul id="selectParent" name="deptId" class="dtree" data-id="0"></ul>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                  <label class="layui-form-label">Mail</label>
+                  <div class="layui-input-block">
+                      <input type="text" value="{{ user.mail }}" name="email" lay-verify="title" autocomplete="off" placeholder="Please input"
+                             class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">Phone</label>
+                  <div class="layui-input-block">
+                      <input type="text" value="{{ user.phone }}" name="phone" lay-verify="title" autocomplete="off" placeholder="Please input"
+                             class="layui-input">
+                  </div>
+              </div>
+
+                <div class="layui-form-item">
+                  <label class="layui-form-label">Tool Auth</label>
+                    <div class="layui-input-block">
+                      <input type="checkbox" name="tool_unlock" title="remove tamper" 
+                              lay-skin="primary" 
+                              {% if tools.unlock=="1" %}
+                                    checked
+                              {% endif %}>
+                      <input type="checkbox" name="tool_switch" title="switch tool" 
+                          lay-skin="primary" 
+                          {% if tools.switch=="1" %}
+                                checked
+                          {% endif %}>
+                      <input type="checkbox" name="tool_adb" title="adb tool" 
+                              lay-skin="primary" 
+                              {% if tools.adb=="1" %}
+                                    checked
+                              {% endif %}>
+                      <input type="checkbox" name="tool_puk" title="puk tool" 
+                          lay-skin="primary" 
+                          {% if tools.puk=="1" %}
+                                checked
+                          {% endif %}>
+                      <input type="checkbox" name="tool_custres" title="custres tool" 
+                          lay-skin="primary" 
+                          {% if tools.custres=="1" %}
+                                checked
+                          {% endif %}>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit=""
+                    lay-filter="user-update">
+                <i class="layui-icon layui-icon-ok"></i>
+               Submit
+            </button>
+            <button type="reset" class="pear-btn pear-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                Reset
+            </button>
+        </div>
+    </div>
+</form>
+{% include 'admin/common/footer.html' %}
+<script>
+  layui.use(['form', 'jquery', 'dtree'], function () {
+    let form = layui.form
+    let $ = layui.jquery
+    let dtree = layui.dtree
+
+    dtree.renderSelect({
+      elem: '#selectParent',
+      url: '/dept/tree',
+      method: 'get',
+      selectInputName: { nodeId: 'deptId', context: 'deptName' },
+      skin: 'layui',
+      dataFormat: 'list',
+      response: { treeId: 'deptId', parentId: 'parentId', title: 'deptName' },
+      selectInitVal: "{{ user.dept_id }}"
+    })
+    form.on('submit(user-update)', function (data) {
+      let toolIds = ''
+      $('input[type=checkbox]:checked').each(function () {
+        toolIds += $(this).val() + ','
+      })
+      toolIds = toolIds.substr(0, toolIds.length - 1)
+      console.log(toolIds)
+      data.field.toolIds = toolIds
+      $.ajax({
+        url: '/admin/user/update',
+        data: JSON.stringify(data.field),
+        dataType: 'json',
+        contentType: 'application/json',
+        type: 'put',
+        success: function (result) {
+          if (result.success) {
+            layer.msg(result.msg, { icon: 1, time: 1000 }, function () {
+              parent.layer.close(parent.layer.getFrameIndex(window.name))//关闭当前页
+              parent.layui.table.reload('user-table')
+            })
+          } else {
+            layer.msg(result.msg, { icon: 2, time: 1000 })
+          }
+        }
+      })
+      return false
+    })
+  })
+</script>
+</body>
+</html>

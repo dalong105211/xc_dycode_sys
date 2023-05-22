@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Management</title>
+    {% include 'admin/common/header.html' %}
+</head>
+<body>
+<form class="layui-form">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Account</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" lay-verify="title" autocomplete="off" placeholder="Please input"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">User name</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="realName" lay-verify="title" autocomplete="off" placeholder="Please input"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Password</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="password" lay-verify="title" autocomplete="off" placeholder="Please input"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                  <label class="layui-form-label">Dept</label>
+                  <div class="layui-input-block">
+                      <ul id="selectParent" name="deptId" class="dtree" data-id="0"></ul>
+                  </div>
+                </div>
+
+                <div class="layui-form-item">
+                  <label class="layui-form-label">Mail</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="email" lay-verify="title" autocomplete="off" placeholder="Please input"
+                             class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">Phone</label>
+                  <div class="layui-input-block">
+                      <input type="text" name="phone" lay-verify="title" autocomplete="off" placeholder="Please input"
+                             class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">Status</label>
+                  <div class="layui-input-block">
+                      <input type="radio" name="status" value="1" title="Enable">
+                      <input type="radio" name="status" value="0" title="Disable" checked>
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">Role</label>
+                <div class="layui-input-block">
+                    {% for role in roles %}
+                        <!-- <input type="radio" name="roleIds" value="{{ role.id }}" title="{{ role.name }}" checked> -->
+                        {% if data.role_id == 1 %}
+                          {% if role.id == 2 %}
+                              <input type="radio" name="roleIds" value="{{ role.id }}" title="{{ role.name }}" checked>
+                          {% else %}
+                              <input type="radio" name="roleIds" value="{{ role.id }}" title="{{ role.name }}" disabled>
+                          {% endif %}
+                        {% else %}
+                          <input type="radio" name="roleIds" value="{{ role.id }}" title="{{ role.name }}" checked>
+                        {% endif %}    
+                    {% endfor %}
+
+                </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Tool Auth</label>
+                    <div class="layui-input-block">
+                      <input type="checkbox" name="tool_unlock" title="remove tamper" 
+                              lay-skin="primary" checked>
+                      <input type="checkbox" name="tool_switch" title="switch tool" 
+                          lay-skin="primary" checked>
+                      <input type="checkbox" name="tool_adb" title="adb tool" 
+                              lay-skin="primary" checked>
+                      <input type="checkbox" name="tool_puk" title="puk tool" 
+                          lay-skin="primary" checked>
+                      <input type="checkbox" name="tool_custres" title="custres tool" 
+                          lay-skin="primary" checked>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit="" lay-filter="user-save">
+                <i class="layui-icon layui-icon-ok"></i>
+               Submit
+            </button>
+            <button type="reset" class="pear-btn pear-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                Reset
+            </button>
+        </div>
+    </div>
+</form>
+{% include 'admin/common/footer.html' %}
+<script>
+  layui.use(['form', 'jquery', 'dtree'], function () {
+    let form = layui.form
+    let $ = layui.jquery
+    let dtree = layui.dtree
+
+    dtree.renderSelect({
+      elem: '#selectParent',
+      url: '/dept/tree',
+      method: 'get',
+      selectInputName: { nodeId: 'deptId', context: 'deptName' },
+      skin: 'layui',
+      dataFormat: 'list',
+      response: { treeId: 'deptId', parentId: 'parentId', title: 'deptName' },
+      selectInitVal: '1'
+    })
+
+    form.on('submit(user-save)', function (data) {
+      let roleIds = ''
+      $('input[type=radio]:checked').each(function () {
+        roleIds += $(this).val() + ','
+      })
+      roleIds = roleIds.substr(0, roleIds.length - 1)
+      data.field.roleIds = roleIds
+
+      $.ajax({
+        url: '/admin/user/save',
+        data: JSON.stringify(data.field),
+        dataType: 'json',
+        contentType: 'application/json',
+        type: 'post',
+        success: function (result) {
+          if (result.success) {
+            layer.msg(result.msg, { icon: 1, time: 1000 }, function () {
+              parent.layer.close(parent.layer.getFrameIndex(window.name))//关闭当前页
+              parent.layui.table.reload('user-table')
+            })
+          } else {
+            layer.msg(result.msg, { icon: 2, time: 1000 })
+          }
+        }
+      })
+      return false
+    })
+  })
+</script>
+<script>
+</script>
+</body>
+</html>

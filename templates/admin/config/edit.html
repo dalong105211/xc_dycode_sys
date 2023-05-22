@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>角色编辑</title>
+    {% include 'admin/common/header.html' %}</head>
+<body>
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+                <div class="layui-form-item layui-hide">
+                    <label class="layui-form-label">ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" value="{{ res.id }}" name="id" lay-verify="title"
+                               autocomplete="off" placeholder="Please input" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Key</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="value" value="{{ res.key }}" lay-verify="title" autocomplete="off"
+                               disabled
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Value</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="value" value="{{ res.value }}" lay-verify="title" autocomplete="off"
+                               placeholder="Please input"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">remark</label>
+                    <div class="layui-input-block">
+                        <textarea placeholder="please input remark" name="remark"
+                                  class="layui-textarea">{{ res.remark }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit=""
+                    lay-filter="role-update">
+                <i class="layui-icon layui-icon-ok"></i>
+                Submit
+            </button>
+            <button type="reset" class="pear-btn pear-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                Reset
+            </button>
+        </div>
+    </div>
+</form>
+{% include 'admin/common/footer.html' %}
+<script>
+  layui.use(['form', 'jquery'], function () {
+    let form = layui.form
+    let $ = layui.jquery
+
+    form.on('submit(role-update)', function (data) {
+      $.ajax({
+        url: '/admin/config/update',
+        data: JSON.stringify(data.field),
+        dataType: 'json',
+        contentType: 'application/json',
+        type: 'put',
+        success: function (result) {
+          if (result.success) {
+            layer.msg(result.msg, { icon: 1, time: 1000 }, function () {
+              parent.layer.close(parent.layer.getFrameIndex(window.name))//关闭当前页
+              parent.layui.table.reload('role-table')
+            })
+          } else {
+            layer.msg(result.msg, { icon: 2, time: 1000 })
+          }
+        }
+      })
+      return false
+    })
+  })
+</script>
+<script>
+</script>
+</body>
+</html>

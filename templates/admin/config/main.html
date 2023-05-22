@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>用户管理</title>
+    {% include 'admin/common/header.html' %}</head>
+<body class="pear-container">
+<!-- <div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">角色名</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="roleName" placeholder="" class="layui-input">
+                </div>
+                <label class="layui-form-label">角色标识</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="roleCode" placeholder="" class="layui-input">
+                </div>
+                <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="role-query">
+                    <i class="layui-icon layui-icon-search"></i>
+                    Query
+                </button>
+                <button type="reset" class="pear-btn pear-btn-md">
+                    <i class="layui-icon layui-icon-refresh"></i>
+                    Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</div> -->
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="role-table" lay-filter="role-table"></table>
+    </div>
+</div>
+</body>
+<!-- 
+<script type="text/html" id="role-toolbar">
+    {% if authorize("admin:config:add") %}
+        <button class="pear-btn pear-btn-primary pear-btn-md" lay-event="add">
+            <i class="layui-icon layui-icon-add-1"></i>
+            Add
+        </button>
+    {% endif %}
+    {% if authorize("admin:config:remove") %}
+        <button class="pear-btn pear-btn-md" lay-event="batchRemove">
+            <i class="layui-icon layui-icon-delete"></i>
+            Remove
+        </button>
+    {% endif %}
+</script> -->
+
+<script type="text/html" id="role-bar">
+    {% if authorize("admin:config:edit") %}
+        <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="edit"><i
+                class="layui-icon layui-icon-edit"></i>
+        </button>
+    {% endif %}
+    <!-- {% if authorize("admin:config:power") %}
+        <button class="pear-btn pear-btn-warming pear-btn-sm" lay-event="power"><i
+                class="layui-icon layui-icon-vercode"></i>
+        </button>
+    {% endif %}
+    {% if authorize("admin:config:remove") %}
+        <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove"><i
+                class="layui-icon layui-icon-delete"></i>
+        </button>
+    {% endif %} -->
+</script>
+
+<script type="text/html" id="role-enable">
+    <input type="checkbox" name="enable" value="{{ "{{d.id}}" }}" lay-skin="switch" lay-text="Enable|Disable"
+           lay-filter="role-enable" {{ "{{# if(d.enable==1){ }} checked {{# } }}" }}>
+</script>
+
+<script type="text/html" id="role-status">
+  <input type="checkbox" name="status" value="{{ "{{d.id}}" }}" lay-skin="switch" lay-text="Approved|Pending"
+         lay-filter="role-status" {{ "{{# if(d.status==1){ }} disabled checked {{# } }}" }}>
+</script>
+
+{% include 'admin/common/footer.html' %}
+<script>
+  layui.use(['table', 'form', 'jquery', 'popup', 'common'], function () {
+    let table = layui.table
+    let form = layui.form
+    let $ = layui.jquery
+    let popup = layui.popup
+
+    let MODULE_PATH = '/admin/config/'
+
+    let cols = [
+      [
+        {% if authorize("admin:config:edit") %}
+          { type: 'checkbox' },
+        {% endif %}
+        { title: 'key', field: 'key', align: 'center'},
+        { title: 'value', field: 'value', align: 'center' },
+        { title: 'remark', field: 'remark', align: 'center' },
+        { title: 'create time', field: 'create_time', templet: '#user-createTime', align: 'center' },
+        { title: 'update time', field: 'update_time', templet: '#user-updateTime', align: 'center' },
+        { title: 'operate', toolbar: '#role-bar', align: 'center', width: 195 }
+      ]
+    ]
+
+    table.render({
+      elem: '#role-table',
+      url: MODULE_PATH + 'data',
+      page: true,
+      cols: cols,
+      skin: 'line',
+      toolbar: '#role-toolbar',
+      defaultToolbar: [{
+        layEvent: 'refresh',
+        icon: 'layui-icon-refresh',
+      }, 'filter', 'print', 'exports']
+    })
+
+    table.on('tool(role-table)', function (obj) {
+      if (obj.event === 'remove') {
+        window.remove(obj)
+      } else if (obj.event === 'edit') {
+        window.edit(obj)
+      } else if (obj.event === 'power') {
+        window.power(obj)
+      }
+    })
+
+    table.on('toolbar(role-table)', function (obj) {
+      if (obj.event === 'add') {
+        window.add()
+      } else if (obj.event === 'refresh') {
+        window.refresh()
+      } else if (obj.event === 'batchRemove') {
+        window.batchRemove(obj)
+      }
+    })
+
+    form.on('submit(role-query)', function (data) {
+      table.reload('role-table', { where: data.field })
+      return false
+    })
+
+    form.on('switch(role-enable)', function (obj) {
+      let operate
+      if (obj.elem.checked) {
+        operate = 'enable'
+      } else {
+        operate = 'disable'
+      }
+      let loading = layer.load()
+      $.ajax({
+        url: '/admin/config/' + operate,
+        data: JSON.stringify({ configId: this.value }),
+        dataType: 'json',
+        contentType: 'application/json',
+        type: 'put',
+        success: function (result) {
+          layer.close(loading)
+          if (result.success) {
+            layer.msg(result.msg, { icon: 1, time: 1000 })
+            window.refresh()
+          } else {
+            layer.msg(result.msg, { icon: 2, time: 1000 })
+          }
+        }
+      })
+    })
+
+    form.on('switch(role-status)', function (obj) {
+      let loading = layer.load()
+      $.ajax({
+        url: '/admin/config/edit',
+        data: JSON.stringify({ configId: this.value }),
+        dataType: 'json',
+        contentType: 'application/json',
+        type: 'put',
+        success: function (result) {
+          layer.close(loading)
+          if (result.success) {
+            layer.msg(result.msg, { icon: 1, time: 1000 })
+            window.refresh()
+          } else {
+            layer.msg(result.msg, { icon: 2, time: 1000 })
+          }
+        }
+      })
+    })
+
+    window.add = function () {
+      layer.open({
+        type: 2,
+        title: 'Add',
+        shade: 0.1,
+        // area: ['500px', '500px'],
+        area: ['40%', '80%'],
+        content: MODULE_PATH + 'add'
+      })
+    }
+
+    window.power = function (obj) {
+      layer.open({
+        type: 2,
+        title: '授权',
+        shade: 0.1,
+        // area: ['320px', '400px'],
+        area: ['40%', '80%'],
+        content: MODULE_PATH + 'power/' + obj.data['id']
+      })
+    }
+
+    window.edit = function (obj) {
+      layer.open({
+        type: 2,
+        title: 'Edit',
+        shade: 0.1,
+        // area: ['500px', '500px'],
+        area: ['40%', '80%'],
+        content: MODULE_PATH + 'edit/' + obj.data['id']
+      })
+    }
+
+    window.remove = function (obj) {
+      layer.confirm('Confirm to remove items selected', { icon: 3, title: 'Notice' }, function (index) {
+        layer.close(index)
+        let loading = layer.load()
+        $.ajax({
+          url: MODULE_PATH + 'remove/' + obj.data['id'],
+          dataType: 'json',
+          type: 'delete',
+          success: function (result) {
+            layer.close(loading)
+            if (result.success) {
+              layer.msg(result.msg, { icon: 1, time: 1000 }, function () {
+                obj.del()
+              })
+            } else {
+              layer.msg(result.msg, { icon: 2, time: 1000 })
+            }
+          }
+        })
+      })
+    }
+
+    window.batchRemove = function (obj) {
+      let data = table.checkStatus(obj.config.id).data
+      if (data.length === 0) {
+        layer.msg('No items selected', {
+          icon: 3,
+          time: 1000
+        })
+        return false
+      }
+      var ids = []
+      var hasCheck = table.checkStatus('role-table')
+      var hasCheckData = hasCheck.data
+      if (hasCheckData.length > 0) {
+        $.each(hasCheckData, function (index, element) {
+          ids.push(element.id)
+        })
+      }
+      console.log(ids)
+      layer.confirm('Confirm to remove items selected', {
+        icon: 3,
+        title: 'Notice'
+      }, function (index) {
+        layer.close(index)
+        let loading = layer.load()
+        $.ajax({
+
+          url: MODULE_PATH + 'batchRemove',
+          data: { ids: ids },
+          dataType: 'json',
+          type: 'delete',
+          success: function (result) {
+            layer.close(loading)
+            if (result.success) {
+              popup.success(result.msg, function () {
+                table.reload('role-table')
+              })
+            } else {
+              popup.failure(result.msg)
+            }
+          }
+        })
+      })
+    }
+
+    window.refresh = function () {
+      table.reload('role-table')
+    }
+  })
+</script>
+</html>

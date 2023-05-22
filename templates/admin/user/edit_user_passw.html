@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Edit User</title>
+    {% include 'admin/common/header.html' %}
+</head>
+<body>
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+                <div class="layui-form-item layui-hide">
+                    <label class="layui-form-label">ID</label>
+                    <div class="layui-input-block">
+                        <input type="text" value="{{ user.id }}" name="userId" lay-verify="title"
+                               autocomplete="off" placeholder="Please input" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Account</label>
+                    <div class="layui-input-block">
+                        <input type="text" value="{{ user.username }}" name="username" lay-verify="title"
+                               autocomplete="off" placeholder="Please input" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">user name</label>
+                    <div class="layui-input-block">
+                        <input type="text" value="{{ user.realname }}" name="realName" lay-verify="title"
+                               autocomplete="off" placeholder="Please input"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                  <label class="layui-form-label">New Password</label>
+                  <div class="layui-input-block">
+                      <input type="password" name="newPassword" lay-verify="title" autocomplete="off"
+                             placeholder="Please input" class="layui-input">
+                  </div>
+              </div>
+              <div class="layui-form-item">
+                  <label class="layui-form-label">Confirm Password</label>
+                  <div class="layui-input-block">
+                      <input type="password" name="confirmPassword" lay-verify="title" autocomplete="off"
+                             placeholder="Please input" class="layui-input">
+                  </div>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit=""
+                    lay-filter="user-update">
+                <i class="layui-icon layui-icon-ok"></i>
+               Submit
+            </button>
+            <button type="reset" class="pear-btn pear-btn-sm">
+                <i class="layui-icon layui-icon-refresh"></i>
+                Reset
+            </button>
+        </div>
+    </div>
+</form>
+{% include 'admin/common/footer.html' %}
+<script>
+  layui.use(['form', 'jquery'], function () {
+    let form = layui.form
+    let $ = layui.jquery
+    form.on('submit(user-update)', function (data) {
+      
+      $.ajax({
+        url: '/admin/user/modifyPassword',
+        data: JSON.stringify(data.field),
+        dataType: 'json',
+        contentType: 'application/json',
+        type: 'put',
+        success: function (result) {
+          if (result.success) {
+            layer.msg(result.msg, { icon: 1, time: 1000 }, function () {
+              parent.layer.close(parent.layer.getFrameIndex(window.name))//关闭当前页
+              parent.layui.table.reload('user-table')
+            })
+          } else {
+            layer.msg(result.msg, { icon: 2, time: 1000 })
+          }
+        }
+      })
+      return false
+    })
+  })
+</script>
+</body>
+</html>
