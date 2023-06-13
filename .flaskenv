@@ -9,15 +9,16 @@ FLASK_RUN_PORT = 8080
 SYSTEM_NAME = XC Admin
 
 # MySql配置信息
-MYSQL_HOST = rm-cn-x0r36qfj8000963o.rwlb.rds.aliyuncs.com
+# MYSQL_HOST = rm-cn-x0r36qfj8000963o.rwlb.rds.aliyuncs.com
 # MYSQL_HOST = dbserver
 MYSQL_PORT = 3306
 #MYSQL_DATABASE = 20230423xcadminflask
 #MYSQL_USERNAME = root
 #MYSQL_PASSWORD = Ab111111
 
-MYSQL_DATABASE = xcadminflask_debug
-MYSQL_USERNAME = test01
+MYSQL_HOST = 127.0.0.1
+MYSQL_DATABASE = xcadminflask_20230612
+MYSQL_USERNAME = root
 MYSQL_PASSWORD = 123456
 
 # Redis 配置
