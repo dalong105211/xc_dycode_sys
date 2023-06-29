@@ -56,7 +56,7 @@ def data():
         User,
         Dept,
         Role
-    ).filter(*filters).outerjoin(Dept, User.dept_id == Dept.id).outerjoin(Role, User.role_id == Role.id).layui_paginate()
+    ).filter(*filters).order_by(desc(User.create_at)).outerjoin(Dept, User.dept_id == Dept.id).outerjoin(Role, User.role_id == Role.id).layui_paginate()
     # for user, dept, role  in query.items:
     #     print("user={}".format(user))
     #     print("dept={}".format(dept))
@@ -111,10 +111,10 @@ def save():
     email = str_escape(req_json.get('email'))
     phone = str_escape(req_json.get('phone'))
 
-    if not check_mail(email):
+    if email and not check_mail(email):
         return fail_api(msg="Email format is error")
 
-    if not check_phone(phone):
+    if phone and not check_phone(phone):
         return fail_api(msg="Phone format is error")
 
     tool_adb = str_escape(req_json.get('tool_adb'))
@@ -148,10 +148,10 @@ def save():
     if len(password.strip()) == 0:
         return fail_api(msg="Username is empty")
     
-    if not check_mail(email):
+    if email and not check_mail(email):
         return fail_api(msg="Email format is error")
 
-    if not check_phone(phone):
+    if phone and not check_phone(phone):
         return fail_api(msg="Phone format is error")
     
 
@@ -229,10 +229,16 @@ def update():
     tool_unlock = str_escape(req_json.get('tool_unlock'))
     tool_puk = str_escape(req_json.get('tool_puk'))
     tool_custres = str_escape(req_json.get('tool_custres'))
-    if not check_mail(mail):
+    if mail == "None":
+        mail = None
+
+    if phone == "None":
+        phone = None
+
+    if mail and not check_mail(mail):
         return fail_api(msg="Email format is error")
 
-    if not check_phone(phone):
+    if phone and phone != "None" and not check_phone(phone):
         return fail_api(msg="Phone format is error")
 
     tool_func = "{}{}{}{}{}00000000000".format("1" if tool_unlock == "on" else "0", 
